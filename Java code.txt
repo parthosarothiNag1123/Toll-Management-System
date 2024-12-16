@@ -1,0 +1,264 @@
+package tollmanagementsystem;
+
+import java.util.ArrayList;
+import java.util.Scanner;
+
+class User {
+    private String username;
+    private String password;
+
+    public User(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public boolean validatePassword(String password) {
+        return this.password.equals(password);
+    }
+}
+
+class Vehicle {
+    private String vehicleNumber;
+    private String vehicleType;
+
+    public Vehicle(String vehicleNumber, String vehicleType) {
+        this.vehicleNumber = vehicleNumber;
+        this.vehicleType = vehicleType;
+    }
+
+    public String getVehicleNumber() {
+        return vehicleNumber;
+    }
+
+    public String getVehicleType() {
+        return vehicleType;
+    }
+}
+
+class Transaction {
+    private String vehicleNumber;
+    private double tollAmount;
+
+    public Transaction(String vehicleNumber, double tollAmount) {
+        this.vehicleNumber = vehicleNumber;
+        this.tollAmount = tollAmount;
+    }
+
+    @Override
+    public String toString() {
+        return "Vehicle Number: " + vehicleNumber + ", Toll Amount: $" + tollAmount;
+    }
+}
+
+public class TollManagementSystem {
+    private static final double CAR_TOLL = 5.0;
+    private static final double TRUCK_TOLL = 10.0;
+    private static final double MOTORCYCLE_TOLL = 2.0;
+
+    private ArrayList<User> users = new ArrayList<>();
+    private User loggedInUser = null;
+    private ArrayList<Vehicle> vehicles = new ArrayList<>();
+    private ArrayList<Transaction> transactions = new ArrayList<>();
+
+    public void registerUser(String username, String password) {
+        for (User user : users) {
+            if (user.getUsername().equals(username)) {
+                System.out.println("Username already exists.");
+                return;
+            }
+        }
+        users.add(new User(username, password));
+        System.out.println("User registered successfully.");
+    }
+
+    public boolean loginUser(String username, String password) {
+        for (User user : users) {
+            if (user.getUsername().equals(username) && user.validatePassword(password)) {
+                loggedInUser = user;
+                System.out.println("Login successful.");
+                return true;
+            }
+        }
+        System.out.println("Invalid username or password.");
+        return false;
+    }
+
+    public void logoutUser() {
+        if (loggedInUser != null) {
+            System.out.println("Logged out successfully.");
+            loggedInUser = null;
+        } else {
+            System.out.println("No user is currently logged in.");
+        }
+    }
+
+    public void registerVehicle(String vehicleNumber, String vehicleType) {
+        if (loggedInUser == null) {
+            System.out.println("Please log in to perform this action.");
+            return;
+        }
+        vehicles.add(new Vehicle(vehicleNumber, vehicleType));
+        System.out.println("Vehicle registered successfully.");
+    }
+
+    public void collectToll(String vehicleNumber) {
+        if (loggedInUser == null) {
+            System.out.println("Please log in to perform this action.");
+            return;
+        }
+        for (Vehicle vehicle : vehicles) {
+            if (vehicle.getVehicleNumber().equals(vehicleNumber)) {
+                double tollAmount = calculateToll(vehicle.getVehicleType());
+                if (tollAmount > 0) {
+                    transactions.add(new Transaction(vehicleNumber, tollAmount));
+                    System.out.println("Toll collected: $" + tollAmount);
+                } else {
+                    System.out.println("Invalid vehicle type. Unable to collect toll.");
+                }
+                return;
+            }
+        }
+        System.out.println("Vehicle not found.");
+    }
+
+    private double calculateToll(String vehicleType) {
+        switch (vehicleType.toLowerCase()) {
+            case "car":
+                return CAR_TOLL;
+            case "truck":
+                return TRUCK_TOLL;
+            case "motorcycle":
+                return MOTORCYCLE_TOLL;
+            default:
+                return 0;
+        }
+    }
+
+    public void viewTransactions() {
+        if (loggedInUser == null) {
+            System.out.println("Please log in to perform this action.");
+            return;
+        }
+        if (transactions.isEmpty()) {
+            System.out.println("No transactions found.");
+            return;
+        }
+        System.out.println("Transaction Log:");
+        for (Transaction transaction : transactions) {
+            System.out.println(transaction);
+        }
+    }
+
+    public static void main(String[] args) {
+        TollManagementSystem system = new TollManagementSystem();
+        Scanner scanner = new Scanner(System.in);
+        int choice;
+
+        while (true) {
+            System.out.println("\n--- Toll Management System ---");
+            System.out.println("1. Register User");
+            System.out.println("2. Login");
+            System.out.println("3. Exit");
+            System.out.print("Enter your choice: ");
+            choice = scanner.nextInt();
+            scanner.nextLine();
+
+            if (choice == 1) {
+                System.out.print("Enter Username: ");
+                String username = scanner.nextLine();
+                System.out.print("Enter Password: ");
+                String password = scanner.nextLine();
+                system.registerUser(username, password);
+            } else if (choice == 2) {
+                System.out.print("Enter Username: ");
+                String username = scanner.nextLine();
+                System.out.print("Enter Password: ");
+                String password = scanner.nextLine();
+                if (system.loginUser(username, password)) {
+                    break;
+                }
+            } else if (choice == 3) {
+                System.out.println("Exiting the system. Goodbye!");
+                scanner.close();
+                return;
+            } else {
+                System.out.println("Invalid choice. Please try again.");
+            }
+        }
+
+        do {
+            System.out.println("\n--- Toll Management System ---");
+            System.out.println("1. Logout");
+            System.out.println("2. Register Vehicle");
+            System.out.println("3. Collect Toll");
+            System.out.println("4. View Transactions");
+            System.out.println("5. Exit");
+            System.out.print("Enter your choice: ");
+            choice = scanner.nextInt();
+            scanner.nextLine();
+
+            switch (choice) {
+                case 1:
+                    system.logoutUser();
+                    while (true) {
+                        System.out.println("\n--- Toll Management System ---");
+                        System.out.println("1. Login");
+                        System.out.println("2. Exit");
+                        System.out.print("Enter your choice: ");
+                        choice = scanner.nextInt();
+                        scanner.nextLine();
+
+                        if (choice == 1) {
+                            System.out.print("Enter Username: ");
+                            String username = scanner.nextLine();
+                            System.out.print("Enter Password: ");
+                            String password = scanner.nextLine();
+                            if (system.loginUser(username, password)) {
+                                break;
+                            }
+                        } else if (choice == 2) {
+                            System.out.println("Exiting the system. Goodbye!");
+                            scanner.close();
+                            return;
+                        } else {
+                            System.out.println("Invalid choice. Please try again.");
+                        }
+                    }
+                    break;
+
+                case 2:
+                    System.out.print("Enter Vehicle Number: ");
+                    String vehicleNumber = scanner.nextLine();
+                    System.out.print("Enter Vehicle Type (Car/Truck/Motorcycle): ");
+                    String vehicleType = scanner.nextLine();
+                    system.registerVehicle(vehicleNumber, vehicleType);
+                    break;
+
+                case 3:
+                    System.out.print("Enter Vehicle Number: ");
+                    vehicleNumber = scanner.nextLine();
+                    system.collectToll(vehicleNumber);
+                    break;
+
+                case 4:
+                    system.viewTransactions();
+                    break;
+
+                case 5:
+                    System.out.println("Exiting the system. Goodbye!");
+                    break;
+                            
+
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+
+        } while (choice != 5);
+
+        scanner.close();
+    }
+}
